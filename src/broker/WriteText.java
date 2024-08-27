@@ -1,10 +1,10 @@
 package broker;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.List;
-
-import static java.lang.System.Logger.Level.ERROR;
 
 /**
  * 文本输出工具
@@ -15,17 +15,32 @@ public class WriteText {
 
     private static String fileName;
 
-    private static final System.Logger logger = System.getLogger(WriteText.class.getSimpleName());
+    private static final Logger logger = LogManager.getLogger(WriteText.class);
 
     public static void createTxtFile(String name, String path) throws IOException {
         createFolder(path);
         fileName = path + name + ".txt";
         File filename = new File(fileName);
-        if (!filename.exists()) {
-            boolean newFile = filename.createNewFile();
-            if (!newFile) {
-                logger.log(ERROR, "Can not create new file.");
+        if (!filename.exists() && !filename.createNewFile()) {
+            logger.error("Can not create new file {}", fileName);
+        }
+    }
+
+    public static void setFilePathName(String name, String path) {
+        File folder = new File(path);
+        if (folder.exists() || folder.mkdirs()) {
+            fileName = path + name + ".txt";
+        }
+    }
+
+    public static void writeLine(String line) {
+        File file = new File(fileName);
+        try {
+            if (file.exists() || file.createNewFile()) {
+                appendTxtLine(line);
             }
+        } catch (IOException e) {
+            logger.error(e);
         }
     }
 
@@ -38,7 +53,7 @@ public class WriteText {
         try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName, true)))) {
             out.write(newStr + "\r\n");
         } catch (IOException e) {
-            logger.log(ERROR, e);
+            logger.error(e);
         }
     }
 
@@ -46,31 +61,26 @@ public class WriteText {
      * @param content 书写的行列表
      * @param path    新文件路径
      */
-    static void writeDataList(List<String> content, String path) throws IOException {
+    static void writeDataList(List<String> content, String path) {
         File fileName = new File(path);
-        if (!fileName.exists()) {
-            boolean newFile = fileName.createNewFile();
-            if (!newFile) {
-                logger.log(ERROR, "Can not create new file.");
+        try {
+            if (fileName.exists() || fileName.createNewFile()) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+                    for (String s : content) {
+                        writer.write(s + '\n');
+                    }
+                    writer.flush();
+                }
             }
-        }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            for (String s : content) {
-                writer.write(s + '\n');
-            }
-            writer.flush();
+        } catch (IOException e) {
+            logger.error(e);
         }
     }
 
     static void createFolder(String folder) {
-        try {
-            File file = new File(folder);
-            if (!file.exists()) {
-                boolean mks = file.mkdirs();
-                if (!mks) logger.log(ERROR, "False file folder.");
-            }
-        } catch (Exception e) {
-            logger.log(ERROR, e);
+        File file = new File(folder);
+        if (!file.exists() && !file.mkdirs()) {
+            logger.error("Can not create folder {}", folder);
         }
     }
 }

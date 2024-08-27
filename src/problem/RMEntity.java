@@ -52,9 +52,9 @@ public abstract class RMEntity {
         index = RM_INVALID_INDEX;
     }
 
-
-    public void setLocation(RMNode location) {
-        this.location = location;
+    RMEntity(RMType _type) {
+        type = _type;
+        index = RM_INVALID_INDEX;
     }
 
     /**
@@ -75,6 +75,8 @@ public abstract class RMEntity {
     }
 
     /**
+     * (tB, tE]
+     *
      * @param timeBegin, exclusive start time
      * @param timeEnd,   inclusive finish time
      */

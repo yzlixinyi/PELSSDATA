@@ -10,6 +10,14 @@ public enum RMType {
      */
     EQUIPMENT,
     /**
+     * 工单
+     */
+    WORK_ORDER,
+    /**
+     * 租约
+     */
+    LEASE_TERM,
+    /**
      * 客户
      */
     CUSTOMER,

@@ -1,9 +1,10 @@
 package problem;
 
+import broker.Tools;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.text.DecimalFormat;
+import static broker.Tools.INVALID_INDEX;
 
 @Getter
 @Setter
@@ -47,6 +48,13 @@ public class RMSegmentFunction {
         breakPoints = new double[n];
     }
 
+    public void setN(int n) {
+        NSegment = n;
+        slopes = new double[n];
+        intercepts = new double[n];
+        breakPoints = new double[n];
+    }
+
     public void setSlops(double[] _slopes) {
         System.arraycopy(_slopes, 0, slopes, 0, NSegment);
     }
@@ -59,8 +67,34 @@ public class RMSegmentFunction {
         System.arraycopy(_breakPoints, 0, breakPoints, 0, NSegment);
     }
 
-    public void setSupplier(RMSupplier supplier) {
-        this.supplier = supplier;
+    public double getBreakPoint(int n) {
+        return n < 0 ? BREAKPOINT0 : breakPoints[n];
+    }
+
+    public double getSlope(int n) {
+        return slopes[Math.min(n, NSegment - 1)];
+    }
+
+    public double getIntercept(int n) {
+        return intercepts[Math.min(n, NSegment - 1)];
+    }
+
+    public int getSegment(int tD) {
+        for (int n = 0; n < NSegment; n++) {
+            if (getBreakPoint(n - 1) <= tD && tD <= getBreakPoint(n)) {
+                return n;
+            }
+        }
+        return INVALID_INDEX;
+    }
+
+    public double getRentCost(int n, int tD) {
+        return getSlope(n) * tD + getIntercept(n);
+    }
+
+    public double getRent(int tD) {
+        int n = getSegment(tD);
+        return n > INVALID_INDEX ? getRentCost(n, tD) : 0;
     }
 
     public String toString() {
@@ -69,10 +103,9 @@ public class RMSegmentFunction {
         sb.append(" AFF ").append(supplier.id);
         sb.append(" TYPE ").append(equipmentType);
         sb.append(" N ").append(NSegment);
-        DecimalFormat df1 = new DecimalFormat("0.0");
         for (int n = 0; n < NSegment; n++) {
             sb.append(String.format("[%s, %s, %s]",
-                    df1.format(slopes[n]), df1.format(intercepts[n]), df1.format(breakPoints[n])));
+                    Tools.df1.format(slopes[n]), Tools.df1.format(intercepts[n]), Tools.df1.format(breakPoints[n])));
         }
         return sb.toString();
     }

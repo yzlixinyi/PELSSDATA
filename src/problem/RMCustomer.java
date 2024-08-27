@@ -1,13 +1,11 @@
 package problem;
 
-import java.util.Objects;
+import lombok.Getter;
 
+import java.util.*;
+
+@Getter
 public class RMCustomer extends RMEntity {
-
-    /**
-     * (输出)是否服务该客户
-     */
-    boolean served = false;
 
     double serviceRevenue = 0;
 
@@ -27,16 +25,44 @@ public class RMCustomer extends RMEntity {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         RMCustomer customer = (RMCustomer) o;
-        return served == customer.served && Double.compare(customer.serviceRevenue, serviceRevenue) == 0;
+        return Double.compare(customer.serviceRevenue, serviceRevenue) == 0;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), served, serviceRevenue);
+        return Objects.hash(super.hashCode(), serviceRevenue);
+    }
+
+    public boolean assureFullServiceExclusively(int[][][] intY, RMProblem problem) {
+        for (RMEntity entity : components) {
+            RMCusOrder cusOrder = (RMCusOrder) entity;
+            if (!cusOrder.orderServedExclusively(intY, problem)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void clearYt(int[][][] intY) {
+        for (RMEntity cusOrder : components) {
+            int j = cusOrder.index;
+            for (int[][] intY_i : intY) {
+                Arrays.fill(intY_i[j], 0);
+            }
+        }
     }
 
     public void calAvgRevenue() {
         int sumT = components.stream().mapToInt(RMEntity::getTD).sum();
         averageRevenue = serviceRevenue / sumT;
+    }
+
+    public void calAvgRevenueFlex() {
+        int sumT = components.stream().mapToInt(c -> ((RMFlexible) c).mD).sum();
+        averageRevenue = serviceRevenue / sumT;
+    }
+
+    public String toString() {
+        return "CUSTOMER %d R %d".formatted(id, (int) serviceRevenue);
     }
 }
